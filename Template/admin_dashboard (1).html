@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Dashboard - Smart Bus Tracking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 100%;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+        }
+
+        .sidebar-header {
+            display: none;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            justify-content: space-around;
+            padding: 0.5rem;
+            overflow-x: auto;
+        }
+
+        .menu-item {
+            padding: 0.75rem 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: white;
+            min-width: 60px;
+            border-radius: 8px;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .menu-icon {
+            font-size: 1.3rem;
+        }
+
+        .menu-text {
+            font-size: 0.7rem;
+            white-space: nowrap;
+        }
+
+        .main-content {
+            flex: 1;
+            width: 100%;
+            margin-bottom: 70px;
+        }
+
+        .navbar {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+        }
+
+        .search-bar {
+            display: none;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            padding: 1rem;
+        }
+
+        .header {
+            margin-bottom: 1.5rem;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-icon {
+            font-size: 1.8rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+            color: #28a745;
+            margin-top: 0.5rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .btn {
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        th {
+            background: #f8f9ff;
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            font-weight: 600;
+            color: #667eea;
+            border-bottom: 2px solid #e0e0e0;
+            font-size: 0.85rem;
+        }
+
+        td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.85rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-badge.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-badge.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .icon-btn {
+            padding: 0.4rem 0.6rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .icon-btn.edit {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .icon-btn.delete {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .icon-btn.view {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 1rem;
+            padding: 1.5rem;
+            border-radius: 15px;
+            max-width: 600px;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .close {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-title {
+            color: #667eea;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Desktop styles */
+        @media (min-width: 769px) {
+            body {
+                flex-direction: row;
+            }
+
+            .sidebar {
+                width: 260px;
+                min-height: 100vh;
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: auto;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            }
+
+            .sidebar-header {
+                display: block;
+                padding: 1.5rem;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+
+            .logo {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-size: 1.3rem;
+                font-weight: 700;
+            }
+
+            .sidebar-menu {
+                flex-direction: column;
+                padding: 1rem 0;
+            }
+
+            .menu-item {
+                flex-direction: row;
+                padding: 1rem 1.5rem;
+                gap: 1rem;
+                min-width: auto;
+            }
+
+            .menu-item:hover, .menu-item.active {
+                background: rgba(255,255,255,0.1);
+                border-left: 4px solid white;
+            }
+
+            .menu-text {
+                font-size: 1rem;
+            }
+
+            .main-content {
+                margin-left: 260px;
+                margin-bottom: 0;
+                width: calc(100% - 260px);
+            }
+
+            .navbar {
+                padding: 1rem 2rem;
+            }
+
+            .search-bar {
+                display: flex;
+                align-items: center;
+                background: #f5f7fa;
+                padding: 0.5rem 1rem;
+                border-radius: 8px;
+                gap: 0.5rem;
+                width: 300px;
+            }
+
+            .search-bar input {
+                border: none;
+                background: none;
+                outline: none;
+                width: 100%;
+            }
+
+            .container {
+                padding: 2rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-card {
+                padding: 1.5rem;
+            }
+
+            .stat-icon {
+                font-size: 2rem;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .card-title {
+                font-size: 1.3rem;
+            }
+
+            th, td {
+                padding: 1rem;
+                font-size: 1rem;
+            }
+
+            .modal-content {
+                margin: 3% auto;
+                padding: 2rem;
+            }
+
+            .modal-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .menu-text {
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span>🚌</span>
+                <span>Bus Tracking</span>
+            </div>
+        </div>
+        <div class="sidebar-menu">
+            <a href="#" class="menu-item active" onclick="showSection('dashboard')">
+                <span class="menu-icon">📊</span>
+                <span class="menu-text">Dashboard</span>
+            </a>
+            <a href="#" class="menu-item" onclick="showSection('buses')">
+                <span class="menu-icon">🚌</span>
+                <span class="menu-text">Buses</span>
+            </a>
+            <a href="#" class="menu-item" onclick="showSection('students')">
+                <span class="menu-icon">👨‍🎓</span>
+                <span class="menu-text">Students</span>
+            </a>
+            <a href="#" class="menu-item" onclick="showSection('tracking')">
+                <span class="menu-icon">📍</span>
+                <span class="menu-text">Tracking</span>
+            </a>
+            <a href="#" class="menu-item" onclick="showSection('reports')">
+                <span class="menu-icon">📈</span>
+                <span class="menu-text">Reports</span>
+            </a>
+            <a href="#" class="menu-item" onclick="showSection('settings')">
+                <span class="menu-icon">⚙️</span>
+                <span class="menu-text">Settings</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <nav class="navbar">
+            <div class="search-bar">
+                <span>🔍</span>
+                <input type="text" placeholder="Search...">
+            </div>
+            <div class="user-menu">
+                <div class="user-info">
+                    <div class="user-name">Russell Diona</div>
+                    <div class="user-role">Administrator</div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div id="dashboard-section">
+                <div class="header">
+                    <h1>Dashboard</h1>
+                    <p>System monitoring and management</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">🚌</div>
+                        </div>
+                        <div class="stat-label">Total Buses</div>
+                        <div class="stat-value">24</div>
+                        <div class="stat-change">↑ 2 Active</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">👨‍🎓</div>
+                        </div>
+                        <div class="stat-label">Total Students</div>
+                        <div class="stat-value">680</div>
+                        <div class="stat-change">↑ 95% Today</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">🚗</div>
+                        </div>
+                        <div class="stat-label">Active Drivers</div>
+                        <div class="stat-value">24</div>
+                        <div class="stat-change">↑ 100%</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">⚠️</div>
+                        </div>
+                        <div class="stat-label">Alerts Today</div>
+                        <div class="stat-value">3</div>
+                        <div class="stat-change" style="color: #dc3545;">⚠️ Attention</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Active Buses</h2>
+                        <button class="btn btn-primary" onclick="openModal('addBusModal')">+ Add Bus</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Bus</th>
+                                    <th>Driver</th>
+                                    <th>Load</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Bus #7</td>
+                                    <td>Ali Hassan</td>
+                                    <td>28/30</td>
+                                    <td><span class="status-badge active">Active</span></td>
+                                    <td>
+                                        <div class="action-btns">
+                                            <button class="icon-btn view">👁️</button>
+                                            <button class="icon-btn edit">✏️</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Bus #12</td>
+                                    <td>Mohamed</td>
+                                    <td>35/40</td>
+                                    <td><span class="status-badge active">Active</span></td>
+                                    <td>
+                                        <div class="action-btns">
+                                            <button class="icon-btn view">👁️</button>
+                                            <button class="icon-btn edit">✏️</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Bus #5</td>
+                                    <td>Ahmed</td>
+                                    <td>0/30</td>
+                                    <td><span class="status-badge inactive">Idle</span></td>
+                                    <td>
+                                        <div class="action-btns">
+                                            <button class="icon-btn view">👁️</button>
+                                            <button class="icon-btn edit">✏️</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Bus #18</td>
+                                    <td>Khalid</td>
+                                    <td>33/35</td>
+                                    <td><span class="status-badge warning">Near Full</span></td>
+                                    <td>
+                                        <div class="action-btns">
+                                            <button class="icon-btn view">👁️</button>
+                                            <button class="icon-btn edit">✏️</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Recent Alerts</h2>
+                        <a href="#" style="color: #667eea; text-decoration: none; font-size: 0.85rem;">View All</a>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Type</th>
+                                    <th>Bus</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>8:45 AM</td>
+                                    <td>⚠️ Capacity</td>
+                                    <td>Bus #18</td>
+                                    <td><span class="status-badge warning">Active</span></td>
+                                </tr>
+                                <tr>
+                                    <td>8:30 AM</td>
+                                    <td>ℹ️ Late</td>
+                                    <td>Bus #7</td>
+                                    <td><span class="status-badge active">Resolved</span></td>
+                                </tr>
+                                <tr>
+                                    <td>7:15 AM</td>
+                                    <td>⚠️ RFID</td>
+                                    <td>Bus #12</td>
+                                    <td><span class="status-badge active">Resolved</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Bus Modal -->
+    <div id="addBusModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addBusModal')">&times;</span>
+            <h2 class="modal-title">Add New Bus</h2>
+            <form onsubmit="handleAddBus(event)">
+                <div class="form-group">
+                    <label>Bus Number</label>
+                    <input type="text" placeholder="e.g., Bus #25" required>
+                </div>
+                <div class="form-group">
+                    <label>Driver Name</label>
+                    <input type="text" placeholder="Enter driver name" required>
+                </div>
+                <div class="form-group">
+                    <label>Route</label>
+                    <input type="text" placeholder="e.g., Al Khuwair - Al Ghubrah" required>
+                </div>
+                <div class="form-group">
+                    <label>Capacity</label>
+                    <input type="number" placeholder="Maximum students" required>
+                </div>
+                <div class="form-group">
+                    <label>RFID Reader ID</label>
+                    <input type="text" placeholder="Enter RFID reader ID" required>
+                </div>
+                <div class="form-group">
+                    <label>GPS Device ID</label>
+                    <input type="text" placeholder="Enter GPS device ID" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Add Bus</button>
+            </form>
+        </div>
+    </div>
+<!--
+    <script>
+        function showSection(section) {
+            alert(`Navigating to ${section} section`);
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function handleAddBus(event) {
+            event.preventDefault();
+            alert('Bus added successfully!');
+            closeModal('addBusModal');
+        }
+
+        function logout() {
+            localStorage.removeItem('userData');
+            window.location.href = 'index.html';
+        }
+
+        // Check authentication
+        window.onload = function() {
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            if (!userData.loggedIn || userData.role !== 'admin') {
+                window.location.href = 'index.html';
+            }
+        };
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        };
+    </script> -->
+</body>
+</html>

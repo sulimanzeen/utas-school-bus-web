@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Driver Dashboard - Smart Bus Tracking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        .navbar {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .header {
+            margin-bottom: 1.5rem;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .trip-control {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .trip-status {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .trip-status.inactive {
+            color: #dc3545;
+        }
+
+        .trip-status.active {
+            color: #28a745;
+        }
+
+        .trip-btn {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0.5rem;
+            width: calc(100% - 1rem);
+        }
+
+        .trip-btn.start {
+            background: #28a745;
+            color: white;
+        }
+
+        .trip-btn.start:hover {
+            background: #218838;
+        }
+
+        .trip-btn.end {
+            background: #dc3545;
+            color: white;
+        }
+
+        .trip-btn.end:hover {
+            background: #c82333;
+        }
+
+        .trip-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .student-list {
+            max-height: none;
+        }
+
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.875rem;
+            border-bottom: 1px solid #f0f0f0;
+            gap: 0.75rem;
+        }
+
+        .student-item:hover {
+            background: #f8f9ff;
+        }
+
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .student-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .student-details h4 {
+            color: #333;
+            margin-bottom: 0.25rem;
+            font-size: 0.95rem;
+        }
+
+        .student-details p {
+            color: #666;
+            font-size: 0.75rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .status-badge.onboard {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.expected {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.dropped {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .alert-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .alert-content h4 {
+            color: #856404;
+            margin-bottom: 0.25rem;
+            font-size: 0.95rem;
+        }
+
+        .alert-content p {
+            color: #856404;
+            font-size: 0.85rem;
+        }
+
+        .rfid-scanner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .rfid-scanner h3 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .scanner-animation {
+            width: 150px;
+            height: 150px;
+            margin: 1rem auto;
+            border: 4px dashed rgba(255,255,255,0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            animation: scan 2s infinite;
+        }
+
+        @keyframes scan {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+        }
+
+        .scanner-status {
+            font-size: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        /* Desktop styles */
+        @media (min-width: 769px) {
+            .navbar {
+                padding: 1rem 2rem;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                padding: 2rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header p {
+                font-size: 1rem;
+            }
+
+            .trip-control {
+                padding: 2rem;
+            }
+
+            .trip-status {
+                font-size: 1.5rem;
+            }
+
+            .trip-btn {
+                padding: 1.2rem 3rem;
+                font-size: 1.2rem;
+                width: auto;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-card {
+                padding: 1.5rem;
+            }
+
+            .stat-icon {
+                font-size: 2.5rem;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .card-title {
+                font-size: 1.3rem;
+            }
+
+            .student-avatar {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+
+            .student-details h4 {
+                font-size: 1rem;
+            }
+
+            .student-details p {
+                font-size: 0.85rem;
+            }
+
+            .status-badge {
+                padding: 0.4rem 1rem;
+                font-size: 0.85rem;
+            }
+
+            .rfid-scanner {
+                padding: 2rem;
+            }
+
+            .rfid-scanner h3 {
+                font-size: 1.5rem;
+            }
+
+            .scanner-animation {
+                width: 200px;
+                height: 200px;
+                font-size: 4rem;
+            }
+
+            .scanner-status {
+                font-size: 1.1rem;
+            }
+
+            .student-list {
+                max-height: 400px;
+                overflow-y: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .trip-btn {
+                font-size: 1rem;
+                padding: 0.875rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <span>🚌</span>
+            <span>Smart Bus</span>
+        </div>
+        <div class="user-menu">
+            <div class="user-info">
+                <div class="user-name">Ali Hassan</div>
+                <div class="user-role">Bus #7</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>Welcome, Ali!</h1>
+            <p>Manage your trips</p>
+        </div>
+
+        <div class="alert-box" id="capacityAlert" style="display: none;">
+            <div class="alert-icon">⚠️</div>
+            <div class="alert-content">
+                <h4>Capacity Warning</h4>
+                <p>Bus approaching max (28/30)</p>
+            </div>
+        </div>
+
+        <div class="trip-control">
+            <div class="trip-status inactive" id="tripStatus">Trip Not Started</div>
+            <p style="color: #666; margin-bottom: 1rem; font-size: 0.9rem;">Start your trip to begin</p>
+            <button class="trip-btn start" id="startTripBtn" onclick="startTrip()">🚀 Start Trip</button>
+            <button class="trip-btn end" id="endTripBtn" onclick="endTrip()" style="display: none;">🛑 End Trip</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👨‍🎓</div>
+                <div class="stat-label">Onboard</div>
+                <div class="stat-value" id="studentsOnboard">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📍</div>
+                <div class="stat-label">Capacity</div>
+                <div class="stat-value">30</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">Check-ins</div>
+                <div class="stat-value" id="checkinsToday">0</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-label">Duration</div>
+                <div class="stat-value" id="tripDuration">00:00</div>
+            </div>
+        </div>
+
+        <div class="rfid-scanner" id="rfidScanner" style="display: none;">
+            <h3>RFID Scanner Active</h3>
+            <div class="scanner-animation">📡</div>
+            <div class="scanner-status">Ready to scan...</div>
+            <button class="trip-btn" onclick="simulateScan()" style="background: white; color: #667eea; margin-top: 1rem; padding: 0.75rem 1.5rem;">
+                🎴 Simulate Scan
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Student List</h2>
+                <span style="color: #666; font-size: 0.85rem;">Bus #7</span>
+            </div>
+            <div class="student-list" id="studentList">
+                <div class="student-item">
+                    <div class="student-info">
+                        <div class="student-avatar">O</div>
+                        <div class="student-details">
+                            <h4>Omar Al-Rashidi</h4>
+                            <p>Grade 5 | #RF00123456</p>
+                        </div>
+                    </div>
+                    <span class="status-badge expected">Expected</span>
+                </div>
+
+                <div class="student-item">
+                    <div class="student-info">
+                        <div class="student-avatar">F</div>
+                        <div class="student-details">
+                            <h4>Fatima Al-Balushi</h4>
+                            <p>Grade 6 | #RF00123457</p>
+                        </div>
+                    </div>
+                    <span class="status-badge expected">Expected</span>
+                </div>
+
+                <div class="student-item">
+                    <div class="student-info">
+                        <div class="student-avatar">M</div>
+                        <div class="student-details">
+                            <h4>Mohammed Al-Kindi</h4>
+                            <p>Grade 4 | #RF00123458</p>
+                        </div>
+                    </div>
+                    <span class="status-badge expected">Expected</span>
+                </div>
+
+                <div class="student-item">
+                    <div class="student-info">
+                        <div class="student-avatar">S</div>
+                        <div class="student-details">
+                            <h4>Sara Al-Rawahi</h4>
+                            <p>Grade 5 | #RF00123459</p>
+                        </div>
+                    </div>
+                    <span class="status-badge expected">Expected</span>
+                </div>
+
+                <div class="student-item">
+                    <div class="student-info">
+                        <div class="student-avatar">A</div>
+                        <div class="student-details">
+                            <h4>Ahmed Al-Hinai</h4>
+                            <p>Grade 7 | #RF00123460</p>
+                        </div>
+                    </div>
+                    <span class="status-badge expected">Expected</span>
+                </div>
+            </div>
+        </div>
+    </div>
+<!--
+    <script>
+        let tripActive = false;
+        let studentsOnboard = 0;
+        let tripStartTime;
+        let tripTimer;
+
+        function startTrip() {
+            tripActive = true;
+            tripStartTime = new Date();
+            
+            document.getElementById('tripStatus').textContent = 'Trip Active';
+            document.getElementById('tripStatus').classList.remove('inactive');
+            document.getElementById('tripStatus').classList.add('active');
+            
+            document.getElementById('startTripBtn').style.display = 'none';
+            document.getElementById('endTripBtn').style.display = 'inline-block';
+            document.getElementById('rfidScanner').style.display = 'block';
+            
+            tripTimer = setInterval(updateTripDuration, 1000);
+            
+            alert('Trip started! RFID scanner active.');
+        }
+
+        function endTrip() {
+            if (studentsOnboard > 0) {
+                if (!confirm('Warning: ' + studentsOnboard + ' students onboard. End trip?')) {
+                    return;
+                }
+            }
+            
+            tripActive = false;
+            clearInterval(tripTimer);
+            
+            document.getElementById('tripStatus').textContent = 'Trip Ended';
+            document.getElementById('tripStatus').classList.remove('active');
+            document.getElementById('tripStatus').classList.add('inactive');
+            
+            document.getElementById('startTripBtn').style.display = 'inline-block';
+            document.getElementById('endTripBtn').style.display = 'none';
+            document.getElementById('rfidScanner').style.display = 'none';
+            
+            alert('Trip ended successfully!');
+            
+            studentsOnboard = 0;
+            document.getElementById('studentsOnboard').textContent = '0';
+            document.getElementById('checkinsToday').textContent = '0';
+            document.getElementById('tripDuration').textContent = '00:00';
+            
+            const badges = document.querySelectorAll('.status-badge');
+            badges.forEach(badge => {
+                badge.className = 'status-badge expected';
+                badge.textContent = 'Expected';
+            });
+        }
+
+        function updateTripDuration() {
+            const now = new Date();
+            const duration = Math.floor((now - tripStartTime) / 1000);
+            const minutes = Math.floor(duration / 60);
+            const seconds = duration % 60;
+            document.getElementById('tripDuration').textContent = 
+                String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+        }
+
+        function simulateScan() {
+            if (!tripActive) {
+                alert('Please start the trip first!');
+                return;
+            }
+            
+            const students = document.querySelectorAll('.student-item');
+            const expectedStudents = Array.from(students).filter(s => 
+                s.querySelector('.status-badge').textContent === 'Expected'
+            );
+            
+            if (expectedStudents.length === 0) {
+                alert('All students checked in!');
+                return;
+            }
+            
+            const student = expectedStudents[0];
+            const badge = student.querySelector('.status-badge');
+            const studentName = student.querySelector('h4').textContent;
+            
+            badge.className = 'status-badge onboard';
+            badge.textContent = 'Onboard';
+            
+            studentsOnboard++;
+            document.getElementById('studentsOnboard').textContent = studentsOnboard;
+            document.getElementById('checkinsToday').textContent = studentsOnboard;
+            
+            if (studentsOnboard >= 28) {
+                document.getElementById('capacityAlert').style.display = 'flex';
+            }
+            
+            alert('✅ ' + studentName + ' checked in!\nTime: ' + new Date().toLocaleTimeString());
+        }
+
+        function logout() {
+            if (tripActive) {
+                alert('Please end your trip first!');
+                return;
+            }
+            localStorage.removeItem('userData');
+            window.location.href = 'index.html';
+        }
+
+        window.onload = function() {
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            if (!userData.loggedIn || userData.role !== 'driver') {
+                window.location.href = 'index.html';
+            }
+        };
+    </script> -->
+</body>
+</html>

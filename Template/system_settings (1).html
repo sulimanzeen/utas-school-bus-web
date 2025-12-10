@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>System Settings - Smart Bus System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        .navbar {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .back-btn {
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .header {
+            margin-bottom: 1.5rem;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .settings-menu {
+            background: white;
+            border-radius: 10px;
+            padding: 0.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+            display: flex;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            gap: 0.5rem;
+        }
+
+        .menu-item {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            color: #666;
+            min-width: 80px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .menu-item:hover {
+            background: #f8f9ff;
+            color: #667eea;
+        }
+
+        .menu-item.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .menu-icon {
+            font-size: 1.3rem;
+        }
+
+        .menu-text {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .settings-content {
+            background: white;
+            border-radius: 10px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .section-title {
+            color: #333;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-description {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .settings-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .group-title {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            background: #f8f9ff;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+
+        .setting-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .setting-info h4 {
+            color: #333;
+            margin-bottom: 0.25rem;
+            font-size: 0.95rem;
+        }
+
+        .setting-info p {
+            color: #666;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: #ccc;
+            border-radius: 26px;
+            cursor: pointer;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch.active {
+            background: #28a745;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(24px);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        .alert-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .alert-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .alert-content strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .alert-content p {
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .device-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .device-card {
+            background: #f8f9ff;
+            padding: 1rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .device-icon {
+            font-size: 2rem;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .device-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .device-details h4 {
+            color: #333;
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        .device-details p {
+            color: #666;
+            font-size: 0.75rem;
+        }
+
+        .device-status {
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .device-status.online {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .device-status.offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Desktop styles */
+        @media (min-width: 769px) {
+            .navbar {
+                padding: 1rem 2rem;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                padding: 2rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .settings-menu {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                padding: 1rem;
+            }
+
+            .menu-item {
+                flex-direction: row;
+                min-width: auto;
+                padding: 1rem 1.5rem;
+            }
+
+            .menu-icon {
+                font-size: 1.3rem;
+            }
+
+            .menu-text {
+                font-size: 1rem;
+            }
+
+            .settings-content {
+                padding: 2rem;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .group-title {
+                font-size: 1.1rem;
+            }
+
+            .setting-item {
+                padding: 1.5rem;
+            }
+
+            .setting-info h4 {
+                font-size: 1rem;
+            }
+
+            .setting-info p {
+                font-size: 0.9rem;
+            }
+
+            .toggle-switch {
+                width: 60px;
+                height: 30px;
+            }
+
+            .toggle-slider {
+                width: 24px;
+                height: 24px;
+            }
+
+            .toggle-switch.active .toggle-slider {
+                transform: translateX(30px);
+            }
+
+            .device-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 2rem;
+            }
+
+            .device-details h4 {
+                font-size: 1rem;
+            }
+
+            .device-details p {
+                font-size: 0.9rem;
+            }
+
+            .btn-primary {
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <span>⚙️</span>
+            <span>Settings</span>
+        </div>
+        <a href="admin-dashboard.html" class="back-btn">← Back</a>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>System Settings</h1>
+            <p>Configure your system</p>
+        </div>
+
+        <div class="settings-menu">
+            <div class="menu-item active" onclick="showSection('general')">
+                <span class="menu-icon">🏢</span>
+                <span class="menu-text">General</span>
+            </div>
+            <div class="menu-item" onclick="showSection('notifications')">
+                <span class="menu-icon">🔔</span>
+                <span class="menu-text">Alerts</span>
+            </div>
+            <div class="menu-item" onclick="showSection('devices')">
+                <span class="menu-icon">📱</span>
+                <span class="menu-text">Devices</span>
+            </div>
+        </div>
+
+        <div class="settings-content">
+            <!-- General Settings -->
+            <div id="general" class="section active">
+                <div class="section-header">
+                    <h2 class="section-title">General Settings</h2>
+                    <p class="section-description">Basic system configuration</p>
+                </div>
+
+                <div class="settings-group">
+                    <h3 class="group-title">School Information</h3>
+                    <div class="form-group">
+                        <label>School Name</label>
+                        <input type="text" value="Al Khuwair School">
+                    </div>
+                    <div class="form-group">
+                        <label>School ID</label>
+                        <input type="text" value="SCH-2025-001">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Email</label>
+                        <input type="email" value="admin@school.om">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Phone</label>
+                        <input type="tel" value="+968 2456 7890">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary">Save Changes</button>
+            </div>
+
+            <!-- Notifications -->
+            <div id="notifications" class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Notifications</h2>
+                    <p class="section-description">Configure alerts</p>
+                </div>
+
+                <div class="settings-group">
+                    <h3 class="group-title">Parent Notifications</h3>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Check-in Alert</h4>
+                            <p>Notify on board</p>
+                        </div>
+                        <div class="toggle-switch active" onclick="toggleSwitch(this)">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Check-out Alert</h4>
+                            <p>Notify on exit</p>
+                        </div>
+                        <div class="toggle-switch active" onclick="toggleSwitch(this)">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Bus Delay Alert</h4>
+                            <p>Notify if delayed</p>
+                        </div>
+                        <div class="toggle-switch active" onclick="toggleSwitch(this)">
+                            <div class="toggle-slider"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary">Save Changes</button>
+            </div>
+
+            <!-- Devices -->
+            <div id="devices" class="section">
+                <div class="section-header">
+                    <h2 class="section-title">IoT Devices</h2>
+                    <p class="section-description">Monitor devices</p>
+                </div>
+
+                <div class="alert alert-success">
+                    <span class="alert-icon">✅</span>
+                    <div class="alert-content">
+                        <strong>System Healthy</strong>
+                        <p>All devices online</p>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3 class="group-title">Connected Devices</h3>
+                    <div class="device-list">
+                        <div class="device-card">
+                            <div class="device-icon">📡</div>
+                            <div class="device-details">
+                                <h4>RFID - Bus #7</h4>
+                                <p>ID: RFID-001</p>
+                            </div>
+                            <span class="device-status online">🟢 Online</span>
+                        </div>
+
+                        <div class="device-card">
+                            <div class="device-icon">📍</div>
+                            <div class="device-details">
+                                <h4>GPS - Bus #7</h4>
+                                <p>ID: GPS-001</p>
+                            </div>
+                            <span class="device-status online">🟢 Online</span>
+                        </div>
+
+                        <div class="device-card">
+                            <div class="device-icon">📡</div>
+                            <div class="device-details">
+                                <h4>RFID - Bus #12</h4>
+                                <p>ID: RFID-002</p>
+                            </div>
+                            <span class="device-status online">🟢 Online</span>
+                        </div>
+
+                        <div class="device-card">
+                            <div class="device-icon">📍</div>
+                            <div class="device-details">
+                                <h4>GPS - Bus #5</h4>
+                                <p>ID: GPS-003</p>
+                            </div>
+                            <span class="device-status offline">🔴 Offline</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary">Add Device</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+            event.target.closest('.menu-item').classList.add('active');
+        }
+
+        function toggleSwitch(element) {
+            element.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

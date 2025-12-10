@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Live Bus Tracking - Smart Bus System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            overflow: hidden;
+        }
+
+        .navbar {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-btn {
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .tracking-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 70px);
+        }
+
+        .sidebar {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            max-height: 40vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-header h2 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .filter-group {
+            margin-bottom: 1rem;
+        }
+
+        .filter-group label {
+            display: block;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .bus-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+
+        .bus-card {
+            background: #f8f9ff;
+            padding: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .bus-card:hover {
+            border-color: #667eea;
+        }
+
+        .bus-card.active {
+            border-color: #667eea;
+            background: #e8ecff;
+        }
+
+        .bus-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .bus-number {
+            font-weight: 700;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .bus-status {
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .bus-status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .bus-status.idle {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .bus-info {
+            color: #666;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .bus-students {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .info-item {
+            font-size: 0.8rem;
+        }
+
+        .info-label {
+            color: #999;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .map-container {
+            flex: 1;
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .route-line {
+            position: absolute;
+            height: 3px;
+            background: rgba(255,255,255,0.3);
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            border-radius: 2px;
+        }
+
+        .bus-marker {
+            position: absolute;
+            font-size: 2.5rem;
+            animation: move 10s infinite;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .bus-marker:hover {
+            transform: scale(1.2);
+        }
+
+        @keyframes move {
+            0%, 100% { left: 10%; }
+            50% { left: 80%; }
+        }
+
+        .stop-marker {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .stop-marker:hover {
+            transform: scale(1.2);
+        }
+
+        .stop-1 { top: 45%; left: 15%; }
+        .stop-2 { top: 48%; left: 35%; }
+        .stop-3 { top: 50%; left: 55%; }
+        .stop-4 { top: 52%; left: 75%; }
+
+        .info-popup {
+            position: absolute;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            min-width: 200px;
+            z-index: 100;
+            display: none;
+            max-width: 90%;
+        }
+
+        .info-popup.show {
+            display: block;
+        }
+
+        .popup-header {
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .popup-content {
+            color: #666;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .close-popup {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            cursor: pointer;
+            color: #999;
+            font-size: 1.3rem;
+        }
+
+        .map-controls {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-btn {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .legend {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: white;
+            padding: 0.75rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .legend-title {
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .legend-icon {
+            font-size: 1.1rem;
+        }
+
+        .live-indicator {
+            position: absolute;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 0.6rem 1rem;
+            border-radius: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        /* Desktop styles */
+        @media (min-width: 769px) {
+            .navbar {
+                padding: 1rem 2rem;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .tracking-container {
+                flex-direction: row;
+                height: calc(100vh - 80px);
+            }
+
+            .sidebar {
+                width: 350px;
+                max-height: 100%;
+                padding: 1.5rem;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            }
+
+            .sidebar-header h2 {
+                font-size: 1.3rem;
+            }
+
+            .bus-list {
+                margin-top: 1rem;
+            }
+
+            .bus-card {
+                padding: 1rem;
+            }
+
+            .bus-number {
+                font-size: 1.1rem;
+            }
+
+            .bus-info {
+                font-size: 0.85rem;
+            }
+
+            .bus-marker {
+                font-size: 3rem;
+            }
+
+            .stop-marker {
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
+            }
+
+            .legend {
+                display: block;
+            }
+
+            .live-indicator {
+                font-size: 1rem;
+                padding: 0.75rem 1.5rem;
+            }
+
+            .control-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+
+            .info-popup {
+                min-width: 250px;
+            }
+
+            .popup-header {
+                font-size: 1.1rem;
+            }
+
+            .popup-content {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .live-indicator {
+                font-size: 0.75rem;
+                padding: 0.5rem 0.75rem;
+            }
+
+            .bus-marker {
+                font-size: 2rem;
+            }
+
+            .stop-marker {
+                width: 30px;
+                height: 30px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <span>🚌</span>
+            <span>Live Tracking</span>
+        </div>
+        <div class="nav-actions">
+            <a href="admin-dashboard.html" class="back-btn">← Back</a>
+        </div>
+    </nav>
+
+    <div class="tracking-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Active Buses</h2>
+                <p style="color: #666; font-size: 0.85rem;">Select to track</p>
+            </div>
+
+            <div class="filter-group">
+                <label>Filter by Status</label>
+                <select class="filter-select" onchange="filterBuses(this.value)">
+                    <option value="all">All Buses</option>
+                    <option value="active">Active Only</option>
+                    <option value="idle">Idle Only</option>
+                </select>
+            </div>
+
+            <div class="bus-list">
+                <div class="bus-card active" onclick="selectBus(this, 1)">
+                    <div class="bus-card-header">
+                        <span class="bus-number">🚌 Bus #7</span>
+                        <span class="bus-status active">Active</span>
+                    </div>
+                    <div class="bus-info">
+                        Driver: Ali Hassan<br>
+                        Route: Al Khuwair<br>
+                        Current: Al Khuwair
+                    </div>
+                    <div class="bus-students">
+                        <div class="info-item">
+                            <span class="info-label">Students:</span>
+                            <span class="info-value">28/30</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">ETA:</span>
+                            <span class="info-value">15 mins</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bus-card" onclick="selectBus(this, 2)">
+                    <div class="bus-card-header">
+                        <span class="bus-number">🚌 Bus #12</span>
+                        <span class="bus-status active">Active</span>
+                    </div>
+                    <div class="bus-info">
+                        Driver: Mohamed<br>
+                        Route: Ruwi - Bausher<br>
+                        Current: Ruwi
+                    </div>
+                    <div class="bus-students">
+                        <div class="info-item">
+                            <span class="info-label">Students:</span>
+                            <span class="info-value">35/40</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">ETA:</span>
+                            <span class="info-value">22 mins</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bus-card" onclick="selectBus(this, 3)">
+                    <div class="bus-card-header">
+                        <span class="bus-number">🚌 Bus #5</span>
+                        <span class="bus-status idle">Idle</span>
+                    </div>
+                    <div class="bus-info">
+                        Driver: Ahmed<br>
+                        Route: Al Qurum<br>
+                        Current: Parked
+                    </div>
+                    <div class="bus-students">
+                        <div class="info-item">
+                            <span class="info-label">Students:</span>
+                            <span class="info-value">0/30</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Status:</span>
+                            <span class="info-value">Idle</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bus-card" onclick="selectBus(this, 4)">
+                    <div class="bus-card-header">
+                        <span class="bus-number">🚌 Bus #18</span>
+                        <span class="bus-status active">Active</span>
+                    </div>
+                    <div class="bus-info">
+                        Driver: Khalid<br>
+                        Route: Mutrah<br>
+                        Current: Mutrah
+                    </div>
+                    <div class="bus-students">
+                        <div class="info-item">
+                            <span class="info-label">Students:</span>
+                            <span class="info-value">33/35</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">ETA:</span>
+                            <span class="info-value">18 mins</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <div class="map-placeholder">
+                <div class="live-indicator">
+                    <div class="live-dot"></div>
+                    <span>LIVE</span>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-title">Legend</div>
+                    <div class="legend-item">
+                        <span class="legend-icon">🚌</span>
+                        <span>Active Bus</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-icon">📍</span>
+                        <span>Bus Stop</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-icon">🏫</span>
+                        <span>School</span>
+                    </div>
+                </div>
+
+                <div class="route-line"></div>
+                
+                <div class="bus-marker" style="top: 48%; left: 10%;" onclick="showBusInfo(event)">
+                    🚌
+                </div>
+
+                <div class="stop-marker stop-1" onclick="showStopInfo(event, 1)">📍</div>
+                <div class="stop-marker stop-2" onclick="showStopInfo(event, 2)">📍</div>
+                <div class="stop-marker stop-3" onclick="showStopInfo(event, 3)">📍</div>
+                <div class="stop-marker stop-4" onclick="showStopInfo(event, 4)">🏫</div>
+
+                <div class="info-popup" id="busPopup" style="top: 30%; left: 20%;">
+                    <span class="close-popup" onclick="closePopup('busPopup')">&times;</span>
+                    <div class="popup-header">Bus #7</div>
+                    <div class="popup-content">
+                        <strong>Driver:</strong> Ali Hassan<br>
+                        <strong>Speed:</strong> 45 km/h<br>
+                        <strong>Students:</strong> 28/30<br>
+                        <strong>Location:</strong> Al Khuwair<br>
+                        <strong>Status:</strong> <span style="color: #28a745;">On Time</span>
+                    </div>
+                </div>
+
+                <div class="info-popup" id="stopPopup" style="top: 60%; left: 30%;">
+                    <span class="close-popup" onclick="closePopup('stopPopup')">&times;</span>
+                    <div class="popup-header">Bus Stop</div>
+                    <div class="popup-content">
+                        <strong>Stop:</strong> Al Khuwair<br>
+                        <strong>Students:</strong> 8<br>
+                        <strong>ETA:</strong> Arrived<br>
+                        <strong>Wait:</strong> 2 mins
+                    </div>
+                </div>
+
+                <div class="map-controls">
+                    <button class="control-btn" title="Zoom In">➕</button>
+                    <button class="control-btn" title="Zoom Out">➖</button>
+                    <button class="control-btn" title="Center">🎯</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function selectBus(element, busId) {
+            document.querySelectorAll('.bus-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            element.classList.add('active');
+            alert('Now tracking Bus #' + busId);
+        }
+
+        function filterBuses(status) {
+            const cards = document.querySelectorAll('.bus-card');
+            cards.forEach(card => {
+                const cardStatus = card.querySelector('.bus-status').textContent.toLowerCase();
+                if (status === 'all') {
+                    card.style.display = 'block';
+                } else if (status === 'active' && cardStatus === 'active') {
+                    card.style.display = 'block';
+                } else if (status === 'idle' && cardStatus === 'idle') {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function showBusInfo(event) {
+            event.stopPropagation();
+            const popup = document.getElementById('busPopup');
+            popup.classList.add('show');
+        }
+
+        function showStopInfo(event, stopNum) {
+            event.stopPropagation();
+            const popup = document.getElementById('stopPopup');
+            const stopNames = ['Al Khuwair', 'Al Ghubrah', 'Qurum', 'School'];
+            popup.querySelector('.popup-content').innerHTML = `
+                <strong>Stop:</strong> ${stopNames[stopNum-1]}<br>
+                <strong>Students:</strong> ${6 + stopNum}<br>
+                <strong>ETA:</strong> ${stopNum * 5} mins
+            `;
+            popup.classList.add('show');
+        }
+
+        function closePopup(popupId) {
+            document.getElementById(popupId).classList.remove('show');
+        }
+
+        document.querySelector('.map-container').addEventListener('click', function(e) {
+            if (e.target === this || e.target.classList.contains('map-placeholder')) {
+                closePopup('busPopup');
+                closePopup('stopPopup');
+            }
+        });
+    </script>
+</body>
+</html>

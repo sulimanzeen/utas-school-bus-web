@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Attendance Reports - Smart Bus System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        .navbar {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .back-btn {
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .header {
+            margin-bottom: 1.5rem;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .filter-bar {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-group {
+            margin-bottom: 1rem;
+        }
+
+        .filter-group label {
+            display: block;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-secondary {
+            background: #28a745;
+            color: white;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .stat-trend {
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .trend-up {
+            color: #28a745;
+        }
+
+        .trend-down {
+            color: #dc3545;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #f0f0f0;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .export-options {
+            display: flex;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        th {
+            background: #f8f9ff;
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            font-weight: 600;
+            color: #667eea;
+            border-bottom: 2px solid #e0e0e0;
+            font-size: 0.85rem;
+        }
+
+        td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.85rem;
+        }
+
+        tr:hover {
+            background: #f8f9ff;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-badge.present {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.absent {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-badge.late {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+
+        .chart-container {
+            height: 200px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 1rem 0.5rem;
+            background: #f8f9ff;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+
+        .chart-bar {
+            width: 40px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px 5px 0 0;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .chart-label {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .chart-value {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 700;
+            color: #667eea;
+            font-size: 0.8rem;
+        }
+
+        .student-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        /* Desktop styles */
+        @media (min-width: 769px) {
+            .navbar {
+                padding: 1rem 2rem;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                padding: 2rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .filter-bar {
+                padding: 1.5rem;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 1rem;
+            }
+
+            .filter-group {
+                margin-bottom: 0;
+            }
+
+            .btn-primary {
+                width: auto;
+                align-self: flex-end;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-card {
+                padding: 1.5rem;
+            }
+
+            .stat-icon {
+                font-size: 2.5rem;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .card-title {
+                font-size: 1.3rem;
+            }
+
+            .export-options {
+                width: auto;
+            }
+
+            .btn-secondary {
+                width: auto;
+                margin-bottom: 0;
+            }
+
+            th, td {
+                padding: 1rem;
+                font-size: 1rem;
+            }
+
+            .chart-container {
+                height: 300px;
+                padding: 1rem;
+            }
+
+            .chart-bar {
+                width: 60px;
+            }
+
+            .chart-label {
+                font-size: 0.85rem;
+            }
+
+            .chart-value {
+                font-size: 0.9rem;
+            }
+
+            .student-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                height: 180px;
+            }
+
+            .chart-bar {
+                width: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <span>📊</span>
+            <span>Reports</span>
+        </div>
+        <a href="admin-dashboard.html" class="back-btn">← Back</a>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>Attendance Reports</h1>
+            <p>Comprehensive tracking</p>
+        </div>
+
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label>Date From</label>
+                <input type="date" value="2025-11-01">
+            </div>
+            <div class="filter-group">
+                <label>Date To</label>
+                <input type="date" value="2025-11-21">
+            </div>
+            <div class="filter-group">
+                <label>Bus Number</label>
+                <select>
+                    <option>All Buses</option>
+                    <option>Bus #7</option>
+                    <option>Bus #12</option>
+                </select>
+            </div>
+            <button class="btn btn-primary">Generate</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">Overall Rate</div>
+                <div class="stat-value">94.5%</div>
+                <div class="stat-trend trend-up">↑ 2.3%</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 94.5%"></div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">👨‍🎓</div>
+                <div class="stat-label">Total Students</div>
+                <div class="stat-value">680</div>
+                <div class="stat-trend">24 buses</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-label">Present Today</div>
+                <div class="stat-value">642</div>
+                <div class="stat-trend trend-up">↑ 95%</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-label">Absent Today</div>
+                <div class="stat-value">38</div>
+                <div class="stat-trend trend-down">↓ 5.5%</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Weekly Trends</h2>
+            </div>
+            <div class="chart-container">
+                <div>
+                    <div class="chart-bar" style="height: 140px;">
+                        <span class="chart-value">95%</span>
+                    </div>
+                    <div class="chart-label">Mon</div>
+                </div>
+                <div>
+                    <div class="chart-bar" style="height: 155px;">
+                        <span class="chart-value">97%</span>
+                    </div>
+                    <div class="chart-label">Tue</div>
+                </div>
+                <div>
+                    <div class="chart-bar" style="height: 133px;">
+                        <span class="chart-value">93%</span>
+                    </div>
+                    <div class="chart-label">Wed</div>
+                </div>
+                <div>
+                    <div class="chart-bar" style="height: 147px;">
+                        <span class="chart-value">96%</span>
+                    </div>
+                    <div class="chart-label">Thu</div>
+                </div>
+                <div>
+                    <div class="chart-bar" style="height: 126px;">
+                        <span class="chart-value">91%</span>
+                    </div>
+                    <div class="chart-label">Fri</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Records</h2>
+                <input type="text" placeholder="🔍 Search..." style="padding: 0.5rem; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; width: 100%; max-width: 200px;">
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>ID</th>
+                            <th>Grade</th>
+                            <th>Bus</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <div class="student-avatar">O</div>
+                                    Omar
+                                </div>
+                            </td>
+                            <td>16S2185</td>
+                            <td>5</td>
+                            <td>#7</td>
+                            <td>Nov 21</td>
+                            <td><span class="status-badge present">Present</span></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <div class="student-avatar">F</div>
+                                    Fatima
+                                </div>
+                            </td>
+                            <td>16S2186</td>
+                            <td>6</td>
+                            <td>#7</td>
+                            <td>Nov 21</td>
+                            <td><span class="status-badge present">Present</span></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <div class="student-avatar">M</div>
+                                    Mohammed
+                                </div>
+                            </td>
+                            <td>16S2187</td>
+                            <td>4</td>
+                            <td>#7</td>
+                            <td>Nov 21</td>
+                            <td><span class="status-badge absent">Absent</span></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <div class="student-avatar">S</div>
+                                    Sara
+                                </div>
+                            </td>
+                            <td>16S2188</td>
+                            <td>5</td>
+                            <td>#7</td>
+                            <td>Nov 21</td>
+                            <td><span class="status-badge late">Late</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Bus Summary</h2>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bus</th>
+                            <th>Driver</th>
+                            <th>Present</th>
+                            <th>Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Bus #7</td>
+                            <td>Ali Hassan</td>
+                            <td>27/30</td>
+                            <td>
+                                90%
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 90%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Bus #12</td>
+                            <td>Mohamed</td>
+                            <td>38/40</td>
+                            <td>
+                                95%
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 95%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Bus #5</td>
+                            <td>Ahmed</td>
+                            <td>29/30</td>
+                            <td>
+                                96.6%
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 96.6%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function exportReport(format) {
+            alert(`Exporting as ${format.toUpperCase()}...`);
+        }
+
+        window.addEventListener('load', () => {
+            const fills = document.querySelectorAll('.progress-fill');
+            fills.forEach(fill => {
+                const width = fill.style.width;
+                fill.style.width = '0';
+                setTimeout(() => {
+                    fill.style.width = width;
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>

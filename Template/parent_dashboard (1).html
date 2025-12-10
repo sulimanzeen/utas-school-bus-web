@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Parent Dashboard - Smart Bus Tracking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        .navbar {
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .user-info {
+            text-align: right;
+            display: none;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.3rem;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 700;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .header {
+            margin-bottom: 1.5rem;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .status-badge.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .bus-marker {
+            position: absolute;
+            font-size: 2.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .student-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8f9ff;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .student-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .student-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .student-info h3 {
+            color: #333;
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+
+        .student-info p {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        .attendance-list {
+            max-height: none;
+        }
+
+        .attendance-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            gap: 0.5rem;
+        }
+
+        .attendance-item:last-child {
+            border-bottom: none;
+        }
+
+        .attendance-date {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        .attendance-status {
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .attendance-status.present {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .attendance-status.absent {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .bus-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .info-item {
+            padding: 0.75rem;
+            background: #f8f9ff;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* Desktop styles */
+        @media (min-width: 769px) {
+            .navbar {
+                padding: 1rem 2rem;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .user-info {
+                display: block;
+            }
+
+            .container {
+                padding: 2rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .header p {
+                font-size: 1rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-card {
+                padding: 1.5rem;
+            }
+
+            .stat-icon {
+                font-size: 2.5rem;
+            }
+
+            .stat-value {
+                font-size: 1.8rem;
+            }
+
+            .main-content {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+
+            .map-container {
+                grid-column: 1 / -1;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .card-title {
+                font-size: 1.3rem;
+            }
+
+            .map-placeholder {
+                height: 400px;
+                font-size: 1.2rem;
+            }
+
+            .attendance-list {
+                max-height: 300px;
+                overflow-y: auto;
+            }
+
+            .bus-info {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1rem;
+            }
+
+            .info-item {
+                padding: 1rem;
+            }
+
+            .info-label {
+                font-size: 0.85rem;
+            }
+
+            .info-value {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .bus-info {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card p {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <span>🚌</span>
+            <span>Smart Bus</span>
+        </div>
+        <div class="user-menu">
+            <div class="notification-bell">
+                🔔
+                <span class="notification-badge">3</span>
+            </div>
+            <div class="user-info">
+                <div class="user-name">Ahmed Al-Rashidi</div>
+                <div class="user-role">Parent</div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>Welcome, Ahmed!</h1>
+            <p>Track your child's bus in real-time</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👦</div>
+                <div class="stat-label">Your Child</div>
+                <div class="stat-value">Omar</div>
+                <span class="status-badge active">On Bus</span>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🚌</div>
+                <div class="stat-label">Bus Number</div>
+                <div class="stat-value">Bus #7</div>
+                <span class="status-badge active">In Transit</span>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📍</div>
+                <div class="stat-label">Location</div>
+                <div class="stat-value">Al Khuwair</div>
+                <p style="font-size: 0.75rem; color: #666; margin-top: 0.5rem;">ETA: 15 mins</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">This Month</div>
+                <div class="stat-value">18/20</div>
+                <p style="font-size: 0.75rem; color: #28a745; margin-top: 0.5rem;">90% Present</p>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="card map-container">
+                <div class="card-header">
+                    <h2 class="card-title">Live Bus Tracking</h2>
+                    <span class="status-badge active">🟢 Live</span>
+                </div>
+                <div class="map-placeholder">
+                    <div class="bus-marker">🚌</div>
+                    <div style="z-index: 10;">
+                        <h3>Bus #7 - Live</h3>
+                        <p>Al Khuwair, Muscat</p>
+                        <p style="font-size: 0.85rem; margin-top: 0.5rem;">GPS: Click for full map</p>
+                    </div>
+                </div>
+                
+                <div class="bus-info">
+                    <div class="info-item">
+                        <div class="info-label">Driver</div>
+                        <div class="info-value">Ali Hassan</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Onboard</div>
+                        <div class="info-value">28/30</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Next Stop</div>
+                        <div class="info-value">Al Ghubrah</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Student Info</h2>
+                </div>
+                <div class="student-card">
+                    <div class="student-avatar">O</div>
+                    <div class="student-info">
+                        <h3>Omar Al-Rashidi</h3>
+                        <p>Grade 5 | ID: 16S2185</p>
+                        <p>RFID: #RF00123456</p>
+                    </div>
+                </div>
+                <div class="bus-info">
+                    <div class="info-item">
+                        <div class="info-label">Check-in</div>
+                        <div class="info-value">7:15 AM</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Status</div>
+                        <div class="info-value" style="color: #28a745;">On Board</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Bus</div>
+                        <div class="info-value">Bus #7</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Recent Attendance</h2>
+                    <a href="#" style="color: #667eea; text-decoration: none; font-size: 0.85rem;">View All</a>
+                </div>
+                <div class="attendance-list">
+                    <div class="attendance-item">
+                        <div>
+                            <div style="font-weight: 600; color: #333; font-size: 0.9rem;">Mon, Nov 18</div>
+                            <div class="attendance-date">In: 7:15 AM | Out: 2:30 PM</div>
+                        </div>
+                        <span class="attendance-status present">Present</span>
+                    </div>
+                    <div class="attendance-item">
+                        <div>
+                            <div style="font-weight: 600; color: #333; font-size: 0.9rem;">Sun, Nov 17</div>
+                            <div class="attendance-date">In: 7:12 AM | Out: 2:28 PM</div>
+                        </div>
+                        <span class="attendance-status present">Present</span>
+                    </div>
+                    <div class="attendance-item">
+                        <div>
+                            <div style="font-weight: 600; color: #333; font-size: 0.9rem;">Thu, Nov 14</div>
+                            <div class="attendance-date">No check-in recorded</div>
+                        </div>
+                        <span class="attendance-status absent">Absent</span>
+                    </div>
+                    <div class="attendance-item">
+                        <div>
+                            <div style="font-weight: 600; color: #333; font-size: 0.9rem;">Wed, Nov 13</div>
+                            <div class="attendance-date">In: 7:18 AM | Out: 2:35 PM</div>
+                        </div>
+                        <span class="attendance-status present">Present</span>
+                    </div>
+                    <div class="attendance-item">
+                        <div>
+                            <div style="font-weight: 600; color: #333; font-size: 0.9rem;">Tue, Nov 12</div>
+                            <div class="attendance-date">In: 7:10 AM | Out: 2:25 PM</div>
+                        </div>
+                        <span class="attendance-status present">Present</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<!--
+    <script>
+        function logout() {
+            localStorage.removeItem('userData');
+            window.location.href = 'index.html';
+        }
+
+        // Check authentication
+        window.onload = function() {
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            if (!userData.loggedIn || userData.role !== 'parent') {
+                window.location.href = 'index.html';
+            }
+        };
+    </script> -->
+</body>
+</html>

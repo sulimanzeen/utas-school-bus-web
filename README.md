@@ -65,10 +65,6 @@ Contact
 For questions about this project, check the source files or open an issue in this repository.
 
 - License
--
 - This project is licensed under the MIT License — see the `LICENSE` file for details. The MIT License permits commercial use, modification, distribution, and private use while retaining the copyright notice.
--
 - Copyright (c) 2025 Suliman Al-Busaidi
--
--
-Project license not specified.
+

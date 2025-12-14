@@ -1,10 +1,10 @@
 <?php
 
 Class DBConfig {
-
-    public $servername = "localhost";
-    public $username = "local";
-    public $password = "local";
+	#This is only example. you have to change it!
+    public $servername = "host";
+    public $username = "remote";
+    public $password = "password";
     public $database = "school-bus";
 
 }

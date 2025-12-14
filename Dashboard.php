@@ -2,29 +2,27 @@
 session_start();
 
 
-if($_SESSION["LoggedIN"]) {
-
-    if($_SESSION["UserTYPE"] == 'parent') {
-
-        echo "You are a parent user!";
+$userRole = ($_SESSION["UserTYPE"]);
 
 
-    } elseif($_SESSION["UserTYPE"] == 'driver') {
-        echo "You are a Driver user!";
+if ($_SESSION["LoggedIN"]) {
 
-    } elseif($_SESSION["UserTYPE"] == 'admin') {
-        echo "You are a Admin user!";
+    if ($_SESSION["UserTYPE"] == 'parent') {
+     
+		include_once "Template/parent_dashboard.php";
+    } elseif ($_SESSION["UserTYPE"] == 'driver') {
+       
+		include_once "Template/driver_dashboard.php";
+    } elseif ($_SESSION["UserTYPE"] == 'admin') {
+        
+		include_once "Template/admin_dashboard.php";
+    }
 
-
-    };
+    
 
 } else {
-
-
     $domain = $_SERVER['HTTP_HOST'];
     $domain = "http://".$domain . "/";
-
-    //header("Location: $domain");
+    // header("Location: $domain");
 }
-
-
+?>

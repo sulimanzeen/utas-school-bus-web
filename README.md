@@ -24,7 +24,7 @@ This repository contains a PHP web application for tracking school buses and man
 
 1. Requirements: PHP 7.2+ (or compatible), a webserver (Apache/Nginx), and MySQL (or MariaDB).
 2. Place the project in your webroot (for example, `htdocs` or `www`).
-3. Create a database and import your schema (this project does not include an SQL dump).
+3. Create a database and import the schema from `SQL/school-bus.sql`.
 4. Update database credentials in `api/config.php`.
 5. Access the app in your browser (e.g. `http://localhost/index.php` or `Dashboard.php`).
 
@@ -45,6 +45,7 @@ This repository contains a PHP web application for tracking school buses and man
   - `Auth.php` — authentication helper
   - `config.php` — database and configuration settings (edit this file)
 - `Template/` — HTML templates and assets used by the UI (dashboard, driver/parent pages, tracking pages)
+ - `SQL/` — database schema and initial SQL dump (`SQL/school-bus.sql`)
 
 ## Configuration
 
